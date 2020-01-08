@@ -167,7 +167,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3538842039045372969}
   - component: {fileID: 8387614399472146293}
-  - component: {fileID: 8545201116439150271}
+  - component: {fileID: 5059714136819896816}
   m_Layer: 0
   m_Name: Enemy_Battle_Model
   m_TagString: Untagged
@@ -211,7 +211,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &8545201116439150271
+--- !u!114 &5059714136819896816
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -220,7 +220,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 524431644410662458}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 732e48e2790a8f14fb4e23cc3017f7fc, type: 3}
+  m_Script: {fileID: 11500000, guid: b8e6e31e306ab2e47aaee2b4892132ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   charInfo: {fileID: 11400000, guid: c28edbb98249a1f489b3ef2480a70a70, type: 2}

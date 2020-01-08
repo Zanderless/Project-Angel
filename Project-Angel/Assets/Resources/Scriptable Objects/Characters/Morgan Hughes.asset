@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterFullName: Morgan Hughes
   characterNickName: Morgan
+  characterPortrait: {fileID: 21300000, guid: a7588ccce16a8334692666af2c428e69, type: 3}
   baseMaxHealth: 250
   baseStrength: 30
   baseMagic: 27

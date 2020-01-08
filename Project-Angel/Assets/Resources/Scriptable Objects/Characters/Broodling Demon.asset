@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 332310cfa14e1e640b396d0b56a56bd8, type: 3}
   m_Name: Broodling Demon
   m_EditorClassIdentifier: 
-  characterFullName: Broodling Demon
-  characterNickName: Broodling
+  characterFullName: Ice Broodling Demon
+  characterNickName: Ice Broodling
+  characterPortrait: {fileID: 0}
   baseMaxHealth: 175
-  baseStrength: 150
+  baseStrength: 19
   baseMagic: 16
   elementalType: 4

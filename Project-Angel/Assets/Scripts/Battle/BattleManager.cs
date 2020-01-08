@@ -84,11 +84,11 @@ public class BattleManager : MonoBehaviour
 
         foreach (WorldCharacter c in PartyManager.Instance.partyCharaters)
         {
-            GameObject obj = Instantiate(c.battleCharacterPrefab, partySpawns.GetChild(spawnIndex).position, partySpawns.GetChild(spawnIndex).rotation, battleArenaParent);
-            obj.GetComponent<BattleCharacter>().Init();
-            spawnedInCharacters.Add(obj.GetComponent<BattleCharacter>());
-            partyList.Add(obj.GetComponent<BattleCharacter>());
-            guardingDictionary.Add(obj.GetComponent<BattleCharacter>(), false);
+            BattleCharacter character = Instantiate(c.battleCharacterPrefab, partySpawns.GetChild(spawnIndex).position, partySpawns.GetChild(spawnIndex).rotation, battleArenaParent).GetComponent<BattleCharacter>();
+            character.Init();
+            spawnedInCharacters.Add(character);
+            partyList.Add(character);
+            guardingDictionary.Add(character, false);
             spawnIndex++;
         }
 
@@ -96,11 +96,11 @@ public class BattleManager : MonoBehaviour
 
         foreach (WorldCharacter c in _enemies)
         {
-            GameObject obj = Instantiate(c.battleCharacterPrefab, enemySpawns.GetChild(spawnIndex).position, enemySpawns.GetChild(spawnIndex).rotation, battleArenaParent);
-            obj.GetComponent<BattleCharacter>().Init();
-            spawnedInCharacters.Add(obj.GetComponent<BattleCharacter>());
-            enemyList.Add(obj.GetComponent<BattleCharacter>());
-            guardingDictionary.Add(obj.GetComponent<BattleCharacter>(), false);
+            BattleCharacter character = Instantiate(c.battleCharacterPrefab, enemySpawns.GetChild(spawnIndex).position, enemySpawns.GetChild(spawnIndex).rotation, battleArenaParent).GetComponent<BattleCharacter>();
+            character.Init();
+            spawnedInCharacters.Add(character);
+            enemyList.Add(character);
+            guardingDictionary.Add(character, false);
             spawnIndex++;
         }
 
