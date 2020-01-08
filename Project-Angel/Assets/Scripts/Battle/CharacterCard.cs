@@ -30,6 +30,7 @@ public class CharacterCard : MonoBehaviour
     {
         character = _character;
         nameTxt.text = character.charInfo.characterNickName;
+        characterPortrait.sprite = character.charInfo.characterPortrait;
         SetGuardOutTxt(CharacterStats.None);
         UpdateCard();
     }

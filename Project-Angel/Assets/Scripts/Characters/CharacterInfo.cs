@@ -9,6 +9,7 @@ public class CharacterInfo : ScriptableObject
     [Header("Character Info")]
     public string characterFullName;
     public string characterNickName;
+    public Sprite characterPortrait; 
 
     [Header("Character Stats")]
     public int baseMaxHealth;

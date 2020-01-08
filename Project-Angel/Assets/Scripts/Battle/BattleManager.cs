@@ -149,8 +149,10 @@ public class BattleManager : MonoBehaviour
 
     #region Enemy Turn
 
-    private void EnemyTurn()
+    private IEnumerator EnemyTurn()
     {
+
+        yield return new WaitForSeconds(2.5f);
 
         BattleCharacter target = null;
 
@@ -190,7 +192,7 @@ public class BattleManager : MonoBehaviour
             guardingDictionary[spawnedInCharacters[TurnIndex]] = false;
             spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
             BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.None);
-            EnemyTurn();
+            StartCoroutine(EnemyTurn());
         }
 
     }
