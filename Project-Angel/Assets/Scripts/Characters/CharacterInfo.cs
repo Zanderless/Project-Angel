@@ -1,0 +1,30 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "Character", menuName = "Wreckless/Character/Default")]
+public class CharacterInfo : ScriptableObject
+{
+
+    [Header("Character Info")]
+    public string characterFullName;
+    public string characterNickName;
+
+    [Header("Character Stats")]
+    public int baseMaxHealth;
+    public int baseStrength;
+    public int baseMagic;
+    public enum ElementalType
+    {
+        None,
+        Water,
+        Fire,
+        Lightning,
+        Ice,
+        Earth,
+        Death,
+        Life
+    }
+    public ElementalType elementalType;
+
+}
