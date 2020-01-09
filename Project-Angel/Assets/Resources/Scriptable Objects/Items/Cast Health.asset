@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15523346a179d3d4d9e2b6578079bca7, type: 3}
   m_Name: Cast Health
   m_EditorClassIdentifier: 
-  itemName: 
-  itemID: 0
-  itemDescription: 
+  itemName: Cast Health
+  itemID: -1
+  itemDescription: This item should not be used in the inventory system
   itemIcon: {fileID: 0}
   itemValue: 0
   restoreType: 0
-  restoreValue: 0
+  restoreValue: 25

@@ -155,6 +155,19 @@ public class BattleManager : MonoBehaviour
         print("Conjure");
     }
 
+    public int GetAllKnockedoutCharacters()
+    {
+        int knockedoutMembers = 0;
+
+        foreach (BattleCharacter c in partyList)
+        {
+            if ((c as BattleParty).IsKnockedOut)
+                knockedoutMembers++;
+        }
+
+        return knockedoutMembers;
+    }
+
     #endregion
 
     #region Enemy Turn
@@ -166,7 +179,10 @@ public class BattleManager : MonoBehaviour
 
         BattleCharacter target = null;
 
-        target = partyList[Random.Range(0, partyList.Count)];
+        do
+        {
+            target = partyList[Random.Range(0, partyList.Count)];
+        } while ((target as BattleParty).IsKnockedOut);
 
         StartCoroutine(DealDamage(target, AttackType.Physical));
 
@@ -180,6 +196,14 @@ public class BattleManager : MonoBehaviour
     {
 
         if (enemyList.Count == 0)
+        {
+            EndBattle();
+            return;
+        }
+
+        
+
+        if(GetAllKnockedoutCharacters() == partyList.Count)
         {
             EndBattle();
             return;
@@ -263,10 +287,8 @@ public class BattleManager : MonoBehaviour
 
     public void RemoveEnemy(BattleCharacter character)
     {
-
         enemyList.Remove(character);
         spawnedInCharacters.Remove(character);
-
     }
 
     #endregion
