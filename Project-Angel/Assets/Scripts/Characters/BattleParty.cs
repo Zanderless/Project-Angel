@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class BattleParty : BattleCharacter
 {
-
     public bool IsKnockedOut { get; private set; }
 
     private int _mana;

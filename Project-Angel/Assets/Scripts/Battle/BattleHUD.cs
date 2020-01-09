@@ -21,9 +21,10 @@ public class BattleHUD : MonoBehaviour
     public GameObject mainSelectionMenu;
     public GameObject characterSelectionMenu;
     public GameObject inventorySelectionMenu;
+    public GameObject battleEndPanel;
     private List<Wreckless.UI.Button> buttons;
     public List<ButtonInfo> buttonInfos;
-    public enum SelectionMenu { None, Main, Character, Inventory };
+    public enum SelectionMenu { None, Main, Character, Inventory, End };
     public SelectionMenu selectionMenu;
     private bool canSelect;
     private int selectionIndex;
@@ -338,12 +339,14 @@ public class BattleHUD : MonoBehaviour
                 mainSelectionMenu.SetActive(false);
                 characterSelectionMenu.SetActive(false);
                 inventorySelectionMenu.SetActive(false);
+                battleEndPanel.SetActive(false);
                 activeSelector = characterSelectionMenu;
                 break;
             case SelectionMenu.Main:
                 mainSelectionMenu.SetActive(true);
                 characterSelectionMenu.SetActive(false);
                 inventorySelectionMenu.SetActive(false);
+                battleEndPanel.SetActive(false);
                 activeSelector = mainSelectionMenu;
                 menuHistory = new List<SelectionMenu>();
                 historyIndex = 0;
@@ -354,6 +357,7 @@ public class BattleHUD : MonoBehaviour
                 mainSelectionMenu.SetActive(false);
                 characterSelectionMenu.SetActive(true);
                 inventorySelectionMenu.SetActive(false);
+                battleEndPanel.SetActive(false);
                 activeSelector = characterSelectionMenu;
                 if (!menuHistory.Contains(SelectionMenu.Character))
                 {
@@ -365,12 +369,19 @@ public class BattleHUD : MonoBehaviour
                 mainSelectionMenu.SetActive(false);
                 characterSelectionMenu.SetActive(false);
                 inventorySelectionMenu.SetActive(true);
+                battleEndPanel.SetActive(false);
                 activeSelector = inventorySelectionMenu;
                 if (!menuHistory.Contains(SelectionMenu.Inventory))
                 {
                     menuHistory.Add(SelectionMenu.Inventory);
                     historyIndex++;
                 }
+                break;
+            case SelectionMenu.End:
+                mainSelectionMenu.SetActive(false);
+                characterSelectionMenu.SetActive(false);
+                inventorySelectionMenu.SetActive(false);
+                battleEndPanel.SetActive(true);
                 break;
             default:
                 print("Uh Oh!");
@@ -380,6 +391,8 @@ public class BattleHUD : MonoBehaviour
         selectionMenu = menu;
         if (menu == SelectionMenu.Main)
             InitSelectionMenuSelect(activeSelector.transform.Find("Selections"));
+        else if (menu == SelectionMenu.End)
+            currentSelectionParent = null;
         else
             currentSelectionParent = activeSelector.transform;
 

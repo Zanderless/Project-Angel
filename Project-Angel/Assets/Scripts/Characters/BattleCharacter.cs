@@ -7,9 +7,6 @@ public class BattleCharacter : MonoBehaviour
 
     public CharacterInfo charInfo;
 
-    public int level;
-    public int exp;
-
     private int _health;
     public int Health
     {

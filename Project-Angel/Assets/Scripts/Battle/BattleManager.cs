@@ -197,7 +197,7 @@ public class BattleManager : MonoBehaviour
 
         if (enemyList.Count == 0)
         {
-            EndBattle();
+            BattleHUD.Instance.battleEndPanel.GetComponent<EndBattlePanel>().InitPanel(EndBattlePanel.BattleResult.Win);
             return;
         }
 
@@ -205,7 +205,7 @@ public class BattleManager : MonoBehaviour
 
         if(GetAllKnockedoutCharacters() == partyList.Count)
         {
-            EndBattle();
+            BattleHUD.Instance.battleEndPanel.GetComponent<EndBattlePanel>().InitPanel(EndBattlePanel.BattleResult.Lose);
             return;
         }
 
@@ -239,6 +239,12 @@ public class BattleManager : MonoBehaviour
         animName = (type == AttackType.Physical) ? "Attack" : "MagicAttack";
 
         BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.None);
+
+        if (type == AttackType.Magical && spawnedInCharacters[TurnIndex] is BattleParty)
+        {
+            (spawnedInCharacters[TurnIndex] as BattleParty).Mana -= 5;
+            BattleHUD.Instance.UpdateCard(spawnedInCharacters[TurnIndex]);
+        }
 
         spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetTrigger(animName);
         AnimatorClipInfo[] currentClipInfo = spawnedInCharacters[TurnIndex].GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
@@ -280,7 +286,7 @@ public class BattleManager : MonoBehaviour
 
     }
 
-    private void EndBattle()
+    public void EndBattle()
     {
         InBattle = false;
     }
