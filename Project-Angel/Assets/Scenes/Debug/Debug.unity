@@ -16749,7 +16749,7 @@ PrefabInstance:
     - target: {fileID: 5124813682696673090, guid: 90c511fc7ab964b44a8b2772df8c5e3b,
         type: 3}
       propertyPath: onSelect.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AttackCast
+      value: Cast
       objectReference: {fileID: 0}
     - target: {fileID: 5124813682696673090, guid: 90c511fc7ab964b44a8b2772df8c5e3b,
         type: 3}
