@@ -67,6 +67,8 @@ public class BattleManager : MonoBehaviour
         TurnIndex = 0;
     }
 
+    public Restorables castHealth;
+
     //Deletes all characters still on the field
     private void DeleteCharacters()
     {
@@ -120,8 +122,16 @@ public class BattleManager : MonoBehaviour
 
     public void AttackCast()
     {
-        BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
-        BattleHUD.Instance.InitButtons(enemyList, AttackType.Magical);
+        if (BattleHUD.Instance.GetCharacterForm(spawnedInCharacters[TurnIndex]) == 0 ||
+            BattleHUD.Instance.GetCharacterForm(spawnedInCharacters[TurnIndex]) == 1) {
+            BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
+            BattleHUD.Instance.InitButtons(enemyList, AttackType.Magical);
+        }
+        else if (BattleHUD.Instance.GetCharacterForm(spawnedInCharacters[TurnIndex]) == 2)
+        {
+            BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
+            BattleHUD.Instance.InitButtons(partyList);
+        }
     }
 
     public void Guard()
@@ -156,7 +166,7 @@ public class BattleManager : MonoBehaviour
 
         BattleCharacter target = null;
 
-        target = partyList[Random.Range(0, partyList.Count - 1)];
+        target = partyList[Random.Range(0, partyList.Count)];
 
         StartCoroutine(DealDamage(target, AttackType.Physical));
 
@@ -273,6 +283,37 @@ public class BattleManager : MonoBehaviour
 
         if (battleCamera.gameObject.activeSelf != InBattle)
             battleCamera.gameObject.SetActive(InBattle);
+
+        if (!InBattle)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Tab) && BattleHUD.Instance.selectionMenu == BattleHUD.SelectionMenu.Main)
+        {
+            BattleHUD.Instance.UpdateCharacterForm(spawnedInCharacters[TurnIndex]);
+
+            string messageTxt = "Form Changed\n";
+
+            switch (BattleHUD.Instance.GetCharacterForm(spawnedInCharacters[TurnIndex]))
+            {
+                case 0:
+                    messageTxt += "Balanced Form";
+                    break;
+                case 1:
+                    messageTxt += "Aggresive Form";
+                    break;
+                case 2:
+                    messageTxt += "Defensive Form";
+                    break;
+                default:
+                    print("Uh Oh!");
+                    break;
+            }
+
+            BattleMessageSystem.Instance.ShowMessage(messageTxt);
+
+        }
+
+
     }
 
     private void Awake()

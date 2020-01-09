@@ -28,11 +28,90 @@ public class BattleHUD : MonoBehaviour
     private bool canSelect;
     private int selectionIndex;
     private Transform currentSelectionParent;
+    private List<SelectionMenu> menuHistory;
+    private int historyIndex;
+
+    [Header("Character Form")]
+    public Dictionary<BattleCharacter, int> battleForms;
+    public Color balancedColor;
+    public Color attackColor;
+    public Color defenceColor;
 
     [Header("Battle HUD")]
     public GameObject battleHUD;
 
     public void InitHUD(List<BattleCharacter> characters)
+    {
+        InitCharacterCards(characters);
+
+        InitCharacterForms(characters);
+
+        menuHistory = new List<SelectionMenu>();
+
+    }
+
+    private void InitCharacterForms(List<BattleCharacter> characters)
+    {
+
+        battleForms = new Dictionary<BattleCharacter, int>();
+
+        foreach(BattleCharacter c in characters)
+        {
+            battleForms.Add(c, 0);
+        }
+
+    }
+
+    public void UpdateCharacterForm(BattleCharacter character)
+    {
+
+        int currentForm = battleForms[character];
+
+        currentForm++;
+
+        if (currentForm == 3)
+            currentForm = 0;
+
+        battleForms[character] = currentForm;
+
+        switch (currentForm)
+        {
+            case 0:
+                UpdateCharacterCardColor(character, balancedColor);
+                break;
+            case 1:
+                UpdateCharacterCardColor(character, attackColor);
+                break;
+            case 2:
+                UpdateCharacterCardColor(character, defenceColor);
+                break;
+            default:
+                print("Uh Oh!");
+                break;
+        }
+
+    }
+
+    private void UpdateCharacterCardColor(BattleCharacter character, Color color)
+    {
+        foreach (CharacterCard card in characterCards)
+        {
+            if (card.character == character)
+            {
+                card.UpdateCardColor(color);
+                return;
+            }
+        }
+    }
+
+    public int GetCharacterForm(BattleCharacter character)
+    {
+        return battleForms[character];
+    }
+
+    #region Character Cards
+
+    private void InitCharacterCards(List<BattleCharacter> characters)
     {
         //Character Cards
         if (characterCards != null)
@@ -45,8 +124,6 @@ public class BattleHUD : MonoBehaviour
         enemyCharacterCard.gameObject.SetActive(false);
 
     }
-
-    #region Character Cards
 
     private void DestroyExistingCards()
     {
@@ -66,6 +143,7 @@ public class BattleHUD : MonoBehaviour
         {
             CharacterCard card = Instantiate(characterCardPrefab, playerCardPanel).GetComponent<CharacterCard>();
             card.InitCard(c);
+            card.UpdateCardColor(balancedColor);
             characterCards.Add(card);
 
         }
@@ -135,6 +213,23 @@ public class BattleHUD : MonoBehaviour
 
     }
 
+    public void InitButtons(List<BattleCharacter> characters)
+    {
+
+        if (selectionMenu == SelectionMenu.Main)
+            return;
+
+        DestroyExistingButtons();
+
+        buttons = new List<Wreckless.UI.Button>();
+        buttonInfos = new List<ButtonInfo>();
+
+        SpawnNewButtons(characters);
+
+        InitSelectionMenuSelect(currentSelectionParent);
+
+    }
+
     public void InitButtons()
     {
 
@@ -173,10 +268,26 @@ public class BattleHUD : MonoBehaviour
                 obj.GetComponent<Wreckless.UI.Button>().ButtonText = c.charInfo.characterNickName;
                 obj.GetComponent<Wreckless.UI.Button>().onSelect.AddListener(delegate { StartCoroutine(BattleManager.Instance.DealDamage(c, type)); });
                 buttons.Add(obj.GetComponent<Wreckless.UI.Button>());
-                buttonInfos.Add(new ButtonInfo(obj.GetComponent<Wreckless.UI.Button>(), c));
+                buttonInfos.Add(new ButtonInfo(c));
             }
         }
     }
+    private void SpawnNewButtons(List<BattleCharacter> characters)
+    {
+
+        if (selectionMenu == SelectionMenu.Character)
+        {
+            foreach (BattleCharacter c in characters)
+            {
+                Transform obj = Instantiate(buttonPrefab, currentSelectionParent.Find("Selections")).transform;
+                obj.GetComponent<Wreckless.UI.Button>().ButtonText = c.charInfo.characterNickName;
+                obj.GetComponent<Wreckless.UI.Button>().onSelect.AddListener(delegate { StartCoroutine(BattleManager.Instance.RestoreCharacter(c, BattleManager.Instance.castHealth)); });
+                buttons.Add(obj.GetComponent<Wreckless.UI.Button>());
+                buttonInfos.Add(new ButtonInfo(c));
+            }
+        }
+    }
+
 
     private void SpawnNewButtons(ItemCount item)
     {
@@ -189,7 +300,7 @@ public class BattleHUD : MonoBehaviour
                 obj.GetComponent<Wreckless.UI.Button>().ButtonText = c.charInfo.characterNickName;
                 obj.GetComponent<Wreckless.UI.Button>().onSelect.AddListener(delegate { StartCoroutine(BattleManager.Instance.RestoreCharacter(c, (item.item as Restorables))); });
                 buttons.Add(obj.GetComponent<Wreckless.UI.Button>());
-                buttonInfos.Add(new ButtonInfo(obj.GetComponent<Wreckless.UI.Button>(), c));
+                buttonInfos.Add(new ButtonInfo(c));
             }
         }
     }
@@ -234,18 +345,32 @@ public class BattleHUD : MonoBehaviour
                 characterSelectionMenu.SetActive(false);
                 inventorySelectionMenu.SetActive(false);
                 activeSelector = mainSelectionMenu;
+                menuHistory = new List<SelectionMenu>();
+                historyIndex = 0;
+                if (!menuHistory.Contains(SelectionMenu.Main))
+                    menuHistory.Add(SelectionMenu.Main);
                 break;
             case SelectionMenu.Character:
                 mainSelectionMenu.SetActive(false);
                 characterSelectionMenu.SetActive(true);
                 inventorySelectionMenu.SetActive(false);
                 activeSelector = characterSelectionMenu;
+                if (!menuHistory.Contains(SelectionMenu.Character))
+                {
+                    menuHistory.Add(SelectionMenu.Character);
+                    historyIndex++;
+                }
                 break;
             case SelectionMenu.Inventory:
                 mainSelectionMenu.SetActive(false);
                 characterSelectionMenu.SetActive(false);
                 inventorySelectionMenu.SetActive(true);
                 activeSelector = inventorySelectionMenu;
+                if (!menuHistory.Contains(SelectionMenu.Inventory))
+                {
+                    menuHistory.Add(SelectionMenu.Inventory);
+                    historyIndex++;
+                }
                 break;
             default:
                 print("Uh Oh!");
@@ -277,7 +402,7 @@ public class BattleHUD : MonoBehaviour
     private void SelectButton()
     {
 
-        if (!canSelect)
+        if (!canSelect || selectionMenu == SelectionMenu.None)
             return;
 
         if (Input.GetKeyDown(KeyCode.W))
@@ -305,6 +430,12 @@ public class BattleHUD : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
             buttons[selectionIndex].Select();
+
+        if (Input.GetKeyDown(KeyCode.Backspace) && historyIndex > 0)
+        {
+            historyIndex--;
+            UpdateMenu(menuHistory[historyIndex]);
+        }
 
     }
 
@@ -337,12 +468,10 @@ public class BattleHUD : MonoBehaviour
 public struct ButtonInfo
 {
 
-    public Wreckless.UI.Button button;
     public BattleCharacter character;
 
-    public ButtonInfo(Wreckless.UI.Button _button, BattleCharacter _character)
+    public ButtonInfo(BattleCharacter _character)
     {
-        button = _button;
         character = _character;
     }
 

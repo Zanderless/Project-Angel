@@ -48,6 +48,11 @@ public class CharacterCard : MonoBehaviour
 
     }
 
+    public void UpdateCardColor(Color color)
+    {
+        GetComponent<Image>().color = color;
+    }
+
     public enum CharacterStats { Out, Guard, None};
 
     public void SetGuardOutTxt(CharacterStats stats)
