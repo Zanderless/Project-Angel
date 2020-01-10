@@ -30,6 +30,7 @@ public class CharacterCard : MonoBehaviour
     {
         character = _character;
         nameTxt.text = character.charInfo.characterNickName;
+        characterPortrait.sprite = character.charInfo.characterPortrait;
         SetGuardOutTxt(CharacterStats.None);
         UpdateCard();
     }
@@ -45,6 +46,11 @@ public class CharacterCard : MonoBehaviour
         manaTxt.text = (character as BattleParty).Mana.ToString("00");
         manaBar.fillAmount = (float)(character as BattleParty).Mana / (float)(character.charInfo as PartyInfo).baseMaxMana;
 
+    }
+
+    public void UpdateCardColor(Color color)
+    {
+        GetComponent<Image>().color = color;
     }
 
     public enum CharacterStats { Out, Guard, None};

@@ -9,7 +9,7 @@ public class BattleManager : MonoBehaviour
 
     public static BattleManager Instance;
 
-    private List<BattleCharacter> spawnedInCharacters; //List of total characters spawned in
+    private List<BattleCharacter> characterList; //List of total characters spawned in
     private List<BattleCharacter> partyList; //List of party characters spawned in
     private List<BattleCharacter> enemyList; //List of enemy characters spawned in
 
@@ -25,7 +25,7 @@ public class BattleManager : MonoBehaviour
 
             _turnIndex = value;
 
-            if (_turnIndex == spawnedInCharacters.Count)
+            if (_turnIndex == characterList.Count)
                 _turnIndex = 0;
 
             NextTurn();
@@ -37,7 +37,7 @@ public class BattleManager : MonoBehaviour
     public Transform battleArenaParent; //Parent object of Battle Arena to spawn characters in
     public Camera battleCamera; //Camera used in battle
 
-    public enum AttackType { Physical, Magical};
+    public enum AttackType { Physical, Magical };
 
     private Dictionary<BattleCharacter, bool> guardingDictionary = new Dictionary<BattleCharacter, bool>();
 
@@ -48,11 +48,11 @@ public class BattleManager : MonoBehaviour
     public void InitBattle(WorldCharacter[] _enemies)
     {
         //Remove All unwanted character models if any still exists
-        if (spawnedInCharacters != null)
+        if (characterList != null)
             DeleteCharacters();
 
         //Initilize or Reinitilize all lists
-        spawnedInCharacters = new List<BattleCharacter>();
+        characterList = new List<BattleCharacter>();
         partyList = new List<BattleCharacter>();
         enemyList = new List<BattleCharacter>();
         guardingDictionary = new Dictionary<BattleCharacter, bool>();
@@ -67,11 +67,13 @@ public class BattleManager : MonoBehaviour
         TurnIndex = 0;
     }
 
+    public Restorables castHealth;
+
     //Deletes all characters still on the field
     private void DeleteCharacters()
     {
-        if (spawnedInCharacters.Count > 0)
-            foreach (BattleCharacter c in spawnedInCharacters)
+        if (characterList.Count > 0)
+            foreach (BattleCharacter c in characterList)
             {
                 Destroy(c.gameObject);
             }
@@ -84,11 +86,11 @@ public class BattleManager : MonoBehaviour
 
         foreach (WorldCharacter c in PartyManager.Instance.partyCharaters)
         {
-            GameObject obj = Instantiate(c.battleCharacterPrefab, partySpawns.GetChild(spawnIndex).position, partySpawns.GetChild(spawnIndex).rotation, battleArenaParent);
-            obj.GetComponent<BattleCharacter>().Init();
-            spawnedInCharacters.Add(obj.GetComponent<BattleCharacter>());
-            partyList.Add(obj.GetComponent<BattleCharacter>());
-            guardingDictionary.Add(obj.GetComponent<BattleCharacter>(), false);
+            BattleCharacter character = Instantiate(c.battleCharacterPrefab, partySpawns.GetChild(spawnIndex).position, partySpawns.GetChild(spawnIndex).rotation, battleArenaParent).GetComponent<BattleCharacter>();
+            character.Init();
+            characterList.Add(character);
+            partyList.Add(character);
+            guardingDictionary.Add(character, false);
             spawnIndex++;
         }
 
@@ -96,11 +98,11 @@ public class BattleManager : MonoBehaviour
 
         foreach (WorldCharacter c in _enemies)
         {
-            GameObject obj = Instantiate(c.battleCharacterPrefab, enemySpawns.GetChild(spawnIndex).position, enemySpawns.GetChild(spawnIndex).rotation, battleArenaParent);
-            obj.GetComponent<BattleCharacter>().Init();
-            spawnedInCharacters.Add(obj.GetComponent<BattleCharacter>());
-            enemyList.Add(obj.GetComponent<BattleCharacter>());
-            guardingDictionary.Add(obj.GetComponent<BattleCharacter>(), false);
+            BattleCharacter character = Instantiate(c.battleCharacterPrefab, enemySpawns.GetChild(spawnIndex).position, enemySpawns.GetChild(spawnIndex).rotation, battleArenaParent).GetComponent<BattleCharacter>();
+            character.Init();
+            characterList.Add(character);
+            enemyList.Add(character);
+            guardingDictionary.Add(character, false);
             spawnIndex++;
         }
 
@@ -118,18 +120,26 @@ public class BattleManager : MonoBehaviour
 
     }
 
-    public void AttackCast()
+    public void Cast()
     {
-        BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
-        BattleHUD.Instance.InitButtons(enemyList, AttackType.Magical);
+        if (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]) == 2)
+        {
+            BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
+            BattleHUD.Instance.InitButtons(partyList);
+        }
+        else
+        {
+            BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
+            BattleHUD.Instance.InitButtons(enemyList, AttackType.Magical);
+        }
     }
 
     public void Guard()
     {
 
-        guardingDictionary[spawnedInCharacters[TurnIndex]] = true;
-        spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", true);
-        BattleHUD.Instance.UpdateCharacterStats(spawnedInCharacters[TurnIndex], CharacterCard.CharacterStats.Guard);
+        guardingDictionary[characterList[TurnIndex]] = true;
+        characterList[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", true);
+        BattleHUD.Instance.UpdateCharacterStats(characterList[TurnIndex], CharacterCard.CharacterStats.Guard);
         TurnIndex++;
 
     }
@@ -145,18 +155,76 @@ public class BattleManager : MonoBehaviour
         print("Conjure");
     }
 
+    public int GetAllKnockedoutCharacters()
+    {
+        int knockedoutMembers = 0;
+
+        foreach (BattleCharacter c in partyList)
+        {
+            if ((c as BattleParty).IsKnockedOut)
+                knockedoutMembers++;
+        }
+
+        return knockedoutMembers;
+    }
+
+    public int CalculatePlayerDamage(AttackType type)
+    {
+
+        int damage = 0;
+
+        //ToDo add leveled strength and magic
+
+        if (type == AttackType.Physical)
+            damage = characterList[TurnIndex].charInfo.baseStrength;
+        else
+            damage = characterList[TurnIndex].charInfo.baseMagic;
+
+        if (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]) == 1)
+            damage += Mathf.CeilToInt((float)damage / 5);
+        else if (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]) == 2)
+            damage -= Mathf.CeilToInt((float)damage / 5);
+
+        return damage;
+
+    }
+
     #endregion
 
     #region Enemy Turn
 
-    private void EnemyTurn()
+    private IEnumerator EnemyTurn()
     {
+
+        yield return new WaitForSeconds(2.5f);
 
         BattleCharacter target = null;
 
-        target = partyList[Random.Range(0, partyList.Count - 1)];
+        do
+        {
+            target = partyList[Random.Range(0, partyList.Count)];
+        } while ((target as BattleParty).IsKnockedOut);
 
         StartCoroutine(DealDamage(target, AttackType.Physical));
+
+    }
+
+    private int CalculateEnemyDamage(AttackType type, BattleCharacter target)
+    {
+
+        int damage = 0;
+
+        if (type == AttackType.Physical)
+            damage = characterList[TurnIndex].charInfo.baseStrength;
+        else
+            damage = characterList[TurnIndex].charInfo.baseMagic;
+
+        if (BattleHUD.Instance.GetCharacterForm(target) == 1)
+            damage -= Mathf.CeilToInt((float)damage / 5);
+        else if (BattleHUD.Instance.GetCharacterForm(target) == 2)
+            damage += Mathf.CeilToInt((float)damage / 5);
+
+        return damage;
 
     }
 
@@ -169,28 +237,36 @@ public class BattleManager : MonoBehaviour
 
         if (enemyList.Count == 0)
         {
-            EndBattle();
+            BattleHUD.Instance.battleEndPanel.GetComponent<EndBattlePanel>().InitPanel(EndBattlePanel.BattleResult.Win);
             return;
         }
 
-        if(spawnedInCharacters[TurnIndex].charInfo is PartyInfo)
+
+
+        if (GetAllKnockedoutCharacters() == partyList.Count)
+        {
+            BattleHUD.Instance.battleEndPanel.GetComponent<EndBattlePanel>().InitPanel(EndBattlePanel.BattleResult.Lose);
+            return;
+        }
+
+        if (characterList[TurnIndex].charInfo is PartyInfo)
         {
 
-            if ((spawnedInCharacters[TurnIndex] as BattleParty).IsKnockedOut)
+            if ((characterList[TurnIndex] as BattleParty).IsKnockedOut)
                 TurnIndex++;
 
-            guardingDictionary[spawnedInCharacters[TurnIndex]] = false;
-            spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
-            BattleHUD.Instance.UpdateCharacterStats(spawnedInCharacters[TurnIndex], CharacterCard.CharacterStats.None);
+            guardingDictionary[characterList[TurnIndex]] = false;
+            characterList[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
+            BattleHUD.Instance.UpdateCharacterStats(characterList[TurnIndex], CharacterCard.CharacterStats.None);
             BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Main);
-            BattleHUD.Instance.UpdateMainMenuName(spawnedInCharacters[TurnIndex]);
+            BattleHUD.Instance.UpdateMainMenuName(characterList[TurnIndex]);
         }
         else
         {
-            guardingDictionary[spawnedInCharacters[TurnIndex]] = false;
-            spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
+            guardingDictionary[characterList[TurnIndex]] = false;
+            characterList[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
             BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.None);
-            EnemyTurn();
+            StartCoroutine(EnemyTurn());
         }
 
     }
@@ -198,25 +274,47 @@ public class BattleManager : MonoBehaviour
     public IEnumerator DealDamage(BattleCharacter character, AttackType type)
     {
 
-        string animName = null;
-
-        animName = (type == AttackType.Physical) ? "Attack" : "MagicAttack";
-
         BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.None);
 
-        spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetTrigger(animName);
-        AnimatorClipInfo[] currentClipInfo = spawnedInCharacters[TurnIndex].GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
+        if (type == AttackType.Magical && characterList[TurnIndex] is BattleParty)
+        {
+            (characterList[TurnIndex] as BattleParty).Mana -= 5;
+            BattleHUD.Instance.UpdateCard(characterList[TurnIndex]);
+        }
+
+        //Animation
+        string animName = null;
+        animName = (type == AttackType.Physical) ? "Attack" : "MagicAttack";
+        characterList[TurnIndex].GetComponent<Animator>().SetTrigger(animName);
+        AnimatorClipInfo[] currentClipInfo = characterList[TurnIndex].GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
         yield return new WaitForSeconds(currentClipInfo[0].clip.length);
 
+
+        int damage = 0;
+
         if (guardingDictionary[character] == false)
-            character.SendMessage("TakeDamage", spawnedInCharacters[TurnIndex].charInfo.baseStrength);
+        {
+            if (characterList[TurnIndex] is BattleParty)
+            {
+                damage = CalculatePlayerDamage(type);
+            }
+            else
+                damage = CalculateEnemyDamage(type, character);
+        }
         else
         {
             character.GetComponent<Animator>().SetBool("IsGuarding", false);
             BattleHUD.Instance.UpdateCharacterStats(character, CharacterCard.CharacterStats.None);
-            character.SendMessage("TakeDamage", spawnedInCharacters[TurnIndex].charInfo.baseStrength / 2);
+            if (characterList[TurnIndex] is BattleParty)
+            {
+                damage = CalculatePlayerDamage(type) / 2;
+            }
+            else
+                damage = characterList[TurnIndex].charInfo.baseStrength / 2;
             guardingDictionary[character] = false;
         }
+
+        character.SendMessage("TakeDamage", damage);
 
         TurnIndex++;
 
@@ -227,15 +325,15 @@ public class BattleManager : MonoBehaviour
 
         BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.None);
 
-        spawnedInCharacters[TurnIndex].GetComponent<Animator>().SetTrigger("UseItem");
-        AnimatorClipInfo[] currentClipInfo = spawnedInCharacters[TurnIndex].GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
+        characterList[TurnIndex].GetComponent<Animator>().SetTrigger("UseItem");
+        AnimatorClipInfo[] currentClipInfo = characterList[TurnIndex].GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
         yield return new WaitForSeconds(currentClipInfo[0].clip.length);
 
         if (item.restoreType == Restorables.RestoreType.Health)
             character.GiveHealth(item.restoreValue);
         else if (item.restoreType == Restorables.RestoreType.Mana)
             (character as BattleParty).AddMana(item.restoreValue);
-        else if(item.restoreType == Restorables.RestoreType.Revive)
+        else if (item.restoreType == Restorables.RestoreType.Revive)
             (character as BattleParty).Revive(item.restoreValue);
 
         Inventory.Instance.RemoveItem(item as Item);
@@ -244,17 +342,15 @@ public class BattleManager : MonoBehaviour
 
     }
 
-    private void EndBattle()
+    public void EndBattle()
     {
         InBattle = false;
     }
 
     public void RemoveEnemy(BattleCharacter character)
     {
-
         enemyList.Remove(character);
-        spawnedInCharacters.Remove(character);
-
+        characterList.Remove(character);
     }
 
     #endregion
@@ -271,6 +367,37 @@ public class BattleManager : MonoBehaviour
 
         if (battleCamera.gameObject.activeSelf != InBattle)
             battleCamera.gameObject.SetActive(InBattle);
+
+        if (!InBattle || PauseMenu.Instance.IsPaused)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Tab) && BattleHUD.Instance.selectionMenu == BattleHUD.SelectionMenu.Main)
+        {
+            BattleHUD.Instance.UpdateCharacterForm(characterList[TurnIndex]);
+
+            string messageTxt = "Form Changed\n";
+
+            switch (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]))
+            {
+                case 0:
+                    messageTxt += "Balanced Form";
+                    break;
+                case 1:
+                    messageTxt += "Aggresive Form";
+                    break;
+                case 2:
+                    messageTxt += "Defensive Form";
+                    break;
+                default:
+                    print("Uh Oh!");
+                    break;
+            }
+
+            BattleMessageSystem.Instance.ShowMessage(messageTxt);
+
+        }
+
+
     }
 
     private void Awake()
