@@ -31,7 +31,7 @@ public class PlayerController : WorldCharacter
         if (playerCamera.gameObject.activeSelf == BattleManager.Instance.InBattle)
             playerCamera.gameObject.SetActive(!BattleManager.Instance.InBattle);
 
-        if (BattleManager.Instance.InBattle)
+        if (BattleManager.Instance.InBattle || PauseMenu.Instance.IsPaused)
             return;
 
         Movement();

@@ -20,6 +20,10 @@ public class ThirdPersonCamera : MonoBehaviour
 
     public void FixedUpdate()
     {
+
+        if (BattleManager.Instance.InBattle || PauseMenu.Instance.IsPaused)
+            return;
+
         playerTransform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * mouseSensitivity.x);
         verticalLookRotation += Input.GetAxis("Mouse Y") * mouseSensitivity.y;
         verticalLookRotation = Mathf.Clamp(verticalLookRotation, xRotMin, xRotMax);

@@ -418,9 +418,9 @@ public class BattleHUD : MonoBehaviour
         if (!canSelect || selectionMenu == SelectionMenu.None)
             return;
 
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetButtonDown("Menu Up"))
             selectionIndex--;
-        else if (Input.GetKeyDown(KeyCode.S))
+        else if (Input.GetButtonDown("Menu Down"))
             selectionIndex++;
 
         if (selectionIndex < 0)
@@ -464,7 +464,7 @@ public class BattleHUD : MonoBehaviour
         if (battleHUD.activeSelf != BattleManager.Instance.InBattle)
             battleHUD.SetActive(BattleManager.Instance.InBattle);
 
-        if (!BattleManager.Instance.InBattle)
+        if (!BattleManager.Instance.InBattle || PauseMenu.Instance.IsPaused)
             return;
 
         SelectButton();

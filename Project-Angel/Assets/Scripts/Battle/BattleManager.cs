@@ -368,7 +368,7 @@ public class BattleManager : MonoBehaviour
         if (battleCamera.gameObject.activeSelf != InBattle)
             battleCamera.gameObject.SetActive(InBattle);
 
-        if (!InBattle)
+        if (!InBattle || PauseMenu.Instance.IsPaused)
             return;
 
         if (Input.GetKeyDown(KeyCode.Tab) && BattleHUD.Instance.selectionMenu == BattleHUD.SelectionMenu.Main)
