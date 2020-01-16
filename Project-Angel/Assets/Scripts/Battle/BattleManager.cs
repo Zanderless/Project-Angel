@@ -39,7 +39,7 @@ public class BattleManager : MonoBehaviour
 
     public enum AttackType { Physical, Magical };
 
-    private Dictionary<BattleCharacter, bool> guardingDictionary = new Dictionary<BattleCharacter, bool>();
+    public Restorables castHealth;
 
     #endregion
 
@@ -55,7 +55,6 @@ public class BattleManager : MonoBehaviour
         characterList = new List<BattleCharacter>();
         partyList = new List<BattleCharacter>();
         enemyList = new List<BattleCharacter>();
-        guardingDictionary = new Dictionary<BattleCharacter, bool>();
 
         //Spawn in new characters
         SpawnCharacters(_enemies);
@@ -66,8 +65,6 @@ public class BattleManager : MonoBehaviour
 
         TurnIndex = 0;
     }
-
-    public Restorables castHealth;
 
     //Deletes all characters still on the field
     private void DeleteCharacters()
@@ -90,7 +87,6 @@ public class BattleManager : MonoBehaviour
             character.Init();
             characterList.Add(character);
             partyList.Add(character);
-            guardingDictionary.Add(character, false);
             spawnIndex++;
         }
 
@@ -102,7 +98,6 @@ public class BattleManager : MonoBehaviour
             character.Init();
             characterList.Add(character);
             enemyList.Add(character);
-            guardingDictionary.Add(character, false);
             spawnIndex++;
         }
 
@@ -122,7 +117,7 @@ public class BattleManager : MonoBehaviour
 
     public void Cast()
     {
-        if (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]) == 2)
+        if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Defensive)
         {
             BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Character);
             BattleHUD.Instance.InitButtons(partyList);
@@ -137,7 +132,7 @@ public class BattleManager : MonoBehaviour
     public void Guard()
     {
 
-        guardingDictionary[characterList[TurnIndex]] = true;
+        characterList[TurnIndex].isGaurding = true;
         characterList[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", true);
         BattleHUD.Instance.UpdateCharacterStats(characterList[TurnIndex], CharacterCard.CharacterStats.Guard);
         TurnIndex++;
@@ -180,9 +175,9 @@ public class BattleManager : MonoBehaviour
         else
             damage = characterList[TurnIndex].charInfo.baseMagic;
 
-        if (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]) == 1)
+        if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Agressive)
             damage += Mathf.CeilToInt((float)damage / 5);
-        else if (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]) == 2)
+        else if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Defensive)
             damage -= Mathf.CeilToInt((float)damage / 5);
 
         return damage;
@@ -219,9 +214,9 @@ public class BattleManager : MonoBehaviour
         else
             damage = characterList[TurnIndex].charInfo.baseMagic;
 
-        if (BattleHUD.Instance.GetCharacterForm(target) == 1)
+        if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Agressive)
             damage -= Mathf.CeilToInt((float)damage / 5);
-        else if (BattleHUD.Instance.GetCharacterForm(target) == 2)
+        else if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Defensive)
             damage += Mathf.CeilToInt((float)damage / 5);
 
         return damage;
@@ -255,7 +250,7 @@ public class BattleManager : MonoBehaviour
             if ((characterList[TurnIndex] as BattleParty).IsKnockedOut)
                 TurnIndex++;
 
-            guardingDictionary[characterList[TurnIndex]] = false;
+            characterList[TurnIndex].isGaurding = false;
             characterList[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
             BattleHUD.Instance.UpdateCharacterStats(characterList[TurnIndex], CharacterCard.CharacterStats.None);
             BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.Main);
@@ -263,7 +258,7 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            guardingDictionary[characterList[TurnIndex]] = false;
+            characterList[TurnIndex].isGaurding = false;
             characterList[TurnIndex].GetComponent<Animator>().SetBool("IsGuarding", false);
             BattleHUD.Instance.UpdateMenu(BattleHUD.SelectionMenu.None);
             StartCoroutine(EnemyTurn());
@@ -292,7 +287,7 @@ public class BattleManager : MonoBehaviour
 
         int damage = 0;
 
-        if (guardingDictionary[character] == false)
+        if (characterList[TurnIndex].isGaurding == false)
         {
             if (characterList[TurnIndex] is BattleParty)
             {
@@ -311,7 +306,7 @@ public class BattleManager : MonoBehaviour
             }
             else
                 damage = characterList[TurnIndex].charInfo.baseStrength / 2;
-            guardingDictionary[character] = false;
+            characterList[TurnIndex].isGaurding = false;
         }
 
         character.SendMessage("TakeDamage", damage);
@@ -330,7 +325,7 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(currentClipInfo[0].clip.length);
 
         if (item.restoreType == Restorables.RestoreType.Health)
-            character.GiveHealth(item.restoreValue);
+            character.AddHealth(item.restoreValue);
         else if (item.restoreType == Restorables.RestoreType.Mana)
             (character as BattleParty).AddMana(item.restoreValue);
         else if (item.restoreType == Restorables.RestoreType.Revive)
@@ -373,20 +368,20 @@ public class BattleManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Tab) && BattleHUD.Instance.selectionMenu == BattleHUD.SelectionMenu.Main)
         {
-            BattleHUD.Instance.UpdateCharacterForm(characterList[TurnIndex]);
+            BattleHUD.Instance.UpdateCharacterStance(characterList[TurnIndex]);
 
-            string messageTxt = "Form Changed\n";
+            string messageTxt = "Stance Changed\n";
 
-            switch (BattleHUD.Instance.GetCharacterForm(characterList[TurnIndex]))
+            switch ((characterList[TurnIndex] as BattleParty).currentStance)
             {
-                case 0:
-                    messageTxt += "Balanced Form";
+                case BattleParty.Stance.Balanced:
+                    messageTxt += "Balanced Stance";
                     break;
-                case 1:
-                    messageTxt += "Aggresive Form";
+                case BattleParty.Stance.Agressive:
+                    messageTxt += "Aggresive Stance";
                     break;
-                case 2:
-                    messageTxt += "Defensive Form";
+                case BattleParty.Stance.Defensive:
+                    messageTxt += "Defensive Stance";
                     break;
                 default:
                     print("Uh Oh!");

@@ -6,6 +6,9 @@ public class BattleParty : BattleCharacter
 {
     public bool IsKnockedOut { get; private set; }
 
+    public enum Stance { Balanced, Agressive, Defensive};
+    public Stance currentStance;
+
     private int _mana;
     public int Mana
     {
@@ -34,9 +37,9 @@ public class BattleParty : BattleCharacter
         BattleHUD.Instance.UpdateCard(this);
     }
 
-    public override void GiveHealth(int hp)
+    public override void AddHealth(int hp)
     {
-        base.GiveHealth(hp);
+        base.AddHealth(hp);
         BattleHUD.Instance.UpdateCard(this);
     }
 
@@ -71,6 +74,7 @@ public class BattleParty : BattleCharacter
     {
         base.Init();
         Mana = (charInfo as PartyInfo).baseMaxMana;
+        currentStance = Stance.Balanced;
     }
 
 }

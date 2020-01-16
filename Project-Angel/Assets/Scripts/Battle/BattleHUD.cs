@@ -33,9 +33,8 @@ public class BattleHUD : MonoBehaviour
     private int historyIndex;
 
     [Header("Character Form")]
-    public Dictionary<BattleCharacter, int> battleForms;
     public Color balancedColor;
-    public Color attackColor;
+    public Color agressiveColor;
     public Color defenceColor;
 
     [Header("Battle HUD")]
@@ -45,49 +44,28 @@ public class BattleHUD : MonoBehaviour
     {
         InitCharacterCards(characters);
 
-        InitCharacterForms(characters);
-
         menuHistory = new List<SelectionMenu>();
 
     }
 
-    private void InitCharacterForms(List<BattleCharacter> characters)
+    public void UpdateCharacterStance(BattleCharacter character)
     {
 
-        battleForms = new Dictionary<BattleCharacter, int>();
+        BattleParty.Stance currentStance = (character as BattleParty).currentStance;
 
-        foreach(BattleCharacter c in characters)
+        switch (currentStance)
         {
-            battleForms.Add(c, 0);
-        }
-
-    }
-
-    public void UpdateCharacterForm(BattleCharacter character)
-    {
-
-        int currentForm = battleForms[character];
-
-        currentForm++;
-
-        if (currentForm == 3)
-            currentForm = 0;
-
-        battleForms[character] = currentForm;
-
-        switch (currentForm)
-        {
-            case 0:
-                UpdateCharacterCardColor(character, balancedColor);
+            case BattleParty.Stance.Balanced:
+                (character as BattleParty).currentStance = BattleParty.Stance.Agressive;
+                UpdateCharacterCardColor(character, agressiveColor);
                 break;
-            case 1:
-                UpdateCharacterCardColor(character, attackColor);
-                break;
-            case 2:
+            case BattleParty.Stance.Agressive:
+                (character as BattleParty).currentStance = BattleParty.Stance.Defensive;
                 UpdateCharacterCardColor(character, defenceColor);
                 break;
-            default:
-                print("Uh Oh!");
+            case BattleParty.Stance.Defensive:
+                (character as BattleParty).currentStance = BattleParty.Stance.Balanced;
+                UpdateCharacterCardColor(character, balancedColor);
                 break;
         }
 
@@ -103,11 +81,6 @@ public class BattleHUD : MonoBehaviour
                 return;
             }
         }
-    }
-
-    public int GetCharacterForm(BattleCharacter character)
-    {
-        return battleForms[character];
     }
 
     #region Character Cards

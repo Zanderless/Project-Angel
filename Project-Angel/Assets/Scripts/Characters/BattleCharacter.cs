@@ -7,6 +7,8 @@ public class BattleCharacter : MonoBehaviour
 
     public CharacterInfo charInfo;
 
+    public bool isGaurding;
+
     private int _health;
     public int Health
     {
@@ -28,7 +30,7 @@ public class BattleCharacter : MonoBehaviour
         GetComponent<Animator>().SetTrigger("Damaged");
     }
 
-    public virtual void GiveHealth(int hp)
+    public virtual void AddHealth(int hp)
     {
         Health += hp;
     }
@@ -43,6 +45,7 @@ public class BattleCharacter : MonoBehaviour
     public virtual void Init()
     {
         Health = charInfo.baseMaxHealth;
+        isGaurding = false;
     }
 
 }
