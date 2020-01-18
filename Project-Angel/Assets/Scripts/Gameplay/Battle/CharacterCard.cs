@@ -11,9 +11,10 @@ public class CharacterCard : MonoBehaviour
     public TextMeshProUGUI nameTxt;
     public Image characterPortrait;
 
-    [Header("Health and Mana Text")]
+    [Header("Health, Mana. and TP Text")]
     public TextMeshProUGUI healthTxt;
     public TextMeshProUGUI manaTxt;
+    public TextMeshProUGUI tpTxt;
 
     [Header("Health and Mana Bar")]
     public Image healthBar;
@@ -22,6 +23,12 @@ public class CharacterCard : MonoBehaviour
     [Header("Out and Guard Txt")]
     public GameObject outTxt;
     public GameObject guardTxt;
+
+    [Header("Stance Bar")]
+    public Image stanceBar;
+
+    [Header("Enrage Bar")]
+    public Image enrageBar;
 
     [HideInInspector]
     public BattleCharacter character;
@@ -46,11 +53,17 @@ public class CharacterCard : MonoBehaviour
         manaTxt.text = (character as BattleParty).Mana.ToString("00");
         manaBar.fillAmount = (float)(character as BattleParty).Mana / (float)(character.charInfo as PartyInfo).baseMaxMana;
 
+        //TP
+        tpTxt.text = (character as BattleParty).TP.ToString();
+
+        //Enraged
+        enrageBar.fillAmount = (float)(character as BattleParty).enragedTurnsLeft / (float)(character as BattleParty).enragedTurnsMax;
+
     }
 
     public void UpdateCardColor(Color color)
     {
-        GetComponent<Image>().color = color;
+        stanceBar.color = color;
     }
 
     public enum CharacterStats { Out, Guard, None};

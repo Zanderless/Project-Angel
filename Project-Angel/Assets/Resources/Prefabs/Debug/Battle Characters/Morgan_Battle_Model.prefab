@@ -752,8 +752,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charInfo: {fileID: 11400000, guid: 0e8dc7dbfc046854ba192e0e5409f3e9, type: 2}
-  level: 1
-  exp: 0
+  isGaurding: 0
+  currentStance: 0
+  enragedTurnsMax: 4
+  enragedTurnsLeft: 0
 --- !u!1 &3800499293050321239
 GameObject:
   m_ObjectHideFlags: 0

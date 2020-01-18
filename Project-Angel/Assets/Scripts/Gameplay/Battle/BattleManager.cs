@@ -145,9 +145,13 @@ public class BattleManager : MonoBehaviour
         BattleHUD.Instance.InitButtons();
     }
 
-    public void Conjure()
+    public void Enrage()
     {
-        print("Conjure");
+        if ((characterList[TurnIndex] as BattleParty).TP == 5)
+        {
+            (characterList[TurnIndex] as BattleParty).EnrageCharacter();
+            (characterList[TurnIndex] as BattleParty).TakeTP(5);
+        }
     }
 
     public int GetAllKnockedoutCharacters()
@@ -161,27 +165,6 @@ public class BattleManager : MonoBehaviour
         }
 
         return knockedoutMembers;
-    }
-
-    public int CalculatePlayerDamage(AttackType type)
-    {
-
-        int damage = 0;
-
-        //ToDo add leveled strength and magic
-
-        if (type == AttackType.Physical)
-            damage = characterList[TurnIndex].charInfo.baseStrength;
-        else
-            damage = characterList[TurnIndex].charInfo.baseMagic;
-
-        if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Agressive)
-            damage += Mathf.CeilToInt((float)damage / 5);
-        else if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Defensive)
-            damage -= Mathf.CeilToInt((float)damage / 5);
-
-        return damage;
-
     }
 
     #endregion
@@ -201,25 +184,6 @@ public class BattleManager : MonoBehaviour
         } while ((target as BattleParty).IsKnockedOut);
 
         StartCoroutine(DealDamage(target, AttackType.Physical));
-
-    }
-
-    private int CalculateEnemyDamage(AttackType type, BattleCharacter target)
-    {
-
-        int damage = 0;
-
-        if (type == AttackType.Physical)
-            damage = characterList[TurnIndex].charInfo.baseStrength;
-        else
-            damage = characterList[TurnIndex].charInfo.baseMagic;
-
-        if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Agressive)
-            damage -= Mathf.CeilToInt((float)damage / 5);
-        else if ((characterList[TurnIndex] as BattleParty).currentStance == BattleParty.Stance.Defensive)
-            damage += Mathf.CeilToInt((float)damage / 5);
-
-        return damage;
 
     }
 
@@ -243,6 +207,8 @@ public class BattleManager : MonoBehaviour
             BattleHUD.Instance.battleEndPanel.GetComponent<EndBattlePanel>().InitPanel(EndBattlePanel.BattleResult.Lose);
             return;
         }
+
+        characterList[TurnIndex].UpdateStatusEffects();
 
         if (characterList[TurnIndex].charInfo is PartyInfo)
         {
@@ -273,7 +239,7 @@ public class BattleManager : MonoBehaviour
 
         if (type == AttackType.Magical && characterList[TurnIndex] is BattleParty)
         {
-            (characterList[TurnIndex] as BattleParty).Mana -= 5;
+            (characterList[TurnIndex] as BattleParty).TakeMana(5);
             BattleHUD.Instance.UpdateCard(characterList[TurnIndex]);
         }
 
@@ -284,32 +250,7 @@ public class BattleManager : MonoBehaviour
         AnimatorClipInfo[] currentClipInfo = characterList[TurnIndex].GetComponent<Animator>().GetCurrentAnimatorClipInfo(0);
         yield return new WaitForSeconds(currentClipInfo[0].clip.length);
 
-
-        int damage = 0;
-
-        if (characterList[TurnIndex].isGaurding == false)
-        {
-            if (characterList[TurnIndex] is BattleParty)
-            {
-                damage = CalculatePlayerDamage(type);
-            }
-            else
-                damage = CalculateEnemyDamage(type, character);
-        }
-        else
-        {
-            character.GetComponent<Animator>().SetBool("IsGuarding", false);
-            BattleHUD.Instance.UpdateCharacterStats(character, CharacterCard.CharacterStats.None);
-            if (characterList[TurnIndex] is BattleParty)
-            {
-                damage = CalculatePlayerDamage(type) / 2;
-            }
-            else
-                damage = characterList[TurnIndex].charInfo.baseStrength / 2;
-            characterList[TurnIndex].isGaurding = false;
-        }
-
-        character.SendMessage("TakeDamage", damage);
+        character.TakeDamage(characterList[TurnIndex], type);
 
         TurnIndex++;
 

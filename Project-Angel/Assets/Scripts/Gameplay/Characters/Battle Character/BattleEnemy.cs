@@ -5,9 +5,9 @@ using UnityEngine;
 public class BattleEnemy : BattleCharacter
 {
 
-    public override void TakeDamage(int dmg)
+    public override void TakeDamage(BattleCharacter opponent, BattleManager.AttackType attack)
     {
-        base.TakeDamage(dmg);
+        base.TakeDamage(opponent, attack);
         BattleHUD.Instance.enemyCharacterCard.UpdateCard(this);
     }
 

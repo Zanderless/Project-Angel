@@ -8,6 +8,6 @@ public class PartyInfo : CharacterInfo
 
     [Header("Party Character Info")]
     public int baseMaxMana;
-    public int baseMaxAura;
+    public int baseMaxTP;
 
 }

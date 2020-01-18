@@ -5,9 +5,9 @@ using UnityEngine;
 public class BattleParty : BattleCharacter
 {
     public bool IsKnockedOut { get; private set; }
-
-    public enum Stance { Balanced, Agressive, Defensive};
-    public Stance currentStance;
+    public bool IsEnraged { get; private set; }
+    public int enragedTurnsMax;
+    public int enragedTurnsLeft;
 
     private int _mana;
     public int Mana
@@ -20,20 +20,20 @@ public class BattleParty : BattleCharacter
         }
     }
 
-    private int _aura;
-    public int Aura
+    private int _tp;
+    public int TP
     {
-        get { return _aura; }
+        get { return _tp; }
         set
         {
-            _aura = value;
-            _aura = Mathf.Clamp(_aura, 0, (charInfo as PartyInfo).baseMaxAura);
+            _tp = value;
+            _tp = Mathf.Clamp(_tp, 0, (charInfo as PartyInfo).baseMaxTP);
         }
     }
 
-    public override void TakeDamage(int dmg)
+    public override void TakeDamage(BattleCharacter opponent, BattleManager.AttackType attack)
     {
-        base.TakeDamage(dmg);
+        base.TakeDamage(opponent, attack);
         BattleHUD.Instance.UpdateCard(this);
     }
 
@@ -49,9 +49,22 @@ public class BattleParty : BattleCharacter
         BattleHUD.Instance.UpdateCard(this);
     }
 
-    public void AddAura(int aura)
+    public void TakeMana(int mana)
     {
-        Aura += aura;
+        Mana -= mana;
+        BattleHUD.Instance.UpdateCard(this);
+    }
+
+    public void AddTP(int tp)
+    {
+        TP += tp;
+        BattleHUD.Instance.UpdateCard(this);
+    }
+
+    public void TakeTP(int tp)
+    {
+        TP -= tp;
+        BattleHUD.Instance.UpdateCard(this);
     }
 
     public override void Die()
@@ -70,11 +83,34 @@ public class BattleParty : BattleCharacter
         BattleHUD.Instance.UpdateCard(this);
     }
 
+    public override void UpdateStatusEffects()
+    {
+
+        base.UpdateStatusEffects();
+
+        enragedTurnsLeft--;
+
+        if(enragedTurnsLeft == 0)
+        {
+            IsEnraged = false;
+        }
+
+        BattleHUD.Instance.UpdateCard(this);
+
+    }
+
+    public void EnrageCharacter()
+    {
+        IsEnraged = true;
+        enragedTurnsLeft = enragedTurnsMax;
+    }
+
     public override void Init()
     {
         base.Init();
         Mana = (charInfo as PartyInfo).baseMaxMana;
-        currentStance = Stance.Balanced;
+        TP = (charInfo as PartyInfo).baseMaxTP;
+        enragedTurnsLeft = 0;
     }
 
 }

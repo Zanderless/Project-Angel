@@ -12,7 +12,7 @@ public class Item : ScriptableObject, IComparable<Item>
     public int itemID;
     [TextArea]
     public string itemDescription;
-    public Texture2D itemIcon;
+    public Sprite itemIcon;
     public int itemValue;
 
     public int CompareTo(Item compareItem)

@@ -13,7 +13,6 @@ public class CharacterInfo : ScriptableObject
 
     [Header("Character Stats")]
     public int baseMaxHealth;
-    public int baseStrength;
     public int baseMagic;
     public enum ElementalType
     {
@@ -27,5 +26,12 @@ public class CharacterInfo : ScriptableObject
         Life
     }
     public ElementalType elementalType;
+
+    public Weapon characterWeapon;
+
+    public void SetNewWeapon(Weapon newWeapon)
+    {
+        characterWeapon = newWeapon;
+    }
 
 }

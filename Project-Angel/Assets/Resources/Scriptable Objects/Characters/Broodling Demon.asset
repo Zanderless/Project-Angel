@@ -16,6 +16,6 @@ MonoBehaviour:
   characterNickName: Ice Broodling
   characterPortrait: {fileID: 0}
   baseMaxHealth: 175
-  baseStrength: 19
   baseMagic: 16
   elementalType: 4
+  characterWeapon: {fileID: 11400000, guid: 1a2abfc52d5e2e3428da106a5b478003, type: 2}
